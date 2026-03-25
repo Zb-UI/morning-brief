@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Holman Morning Brief</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e14;
+    --surface: #111720;
+    --surface2: #161d28;
+    --border: #1e2a38;
+    --accent: #00b4d8;
+    --accent2: #f4a261;
+    --accent3: #2ec27e;
+    --red: #e63946;
+    --text: #c9d6df;
+    --text-dim: #5a7a8a;
+    --text-bright: #e8f1f5;
+    --holman-blue: #003a7d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #003a7d 0%, #001f4d 60%, #0a0e14 100%);
+    padding: 18px 28px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--accent);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-left { display: flex; align-items: center; gap: 14px; }
+
+  .logo-badge {
+    background: var(--accent);
+    color: #000;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    padding: 4px 10px;
+    border-radius: 3px;
+  }
+
+  .header-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: #fff;
+  }
+
+  .header-right { display: flex; align-items: center; gap: 16px; }
+
+  #clock {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+
+  #date-display {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+
+  .refresh-btn {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 5px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .refresh-btn:hover { background: var(--accent); color: #000; }
+  .refresh-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── TICKER ── */
+  .ticker-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    height: 32px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .ticker-label {
+    background: var(--accent2);
+    color: #000;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 0 12px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+  }
+
+  .ticker-wrap { flex: 1; overflow: hidden; }
+
+  .ticker-inner {
+    display: inline-flex;
+    animation: ticker 40s linear infinite;
+    white-space: nowrap;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    gap: 0;
+  }
+
+  .ticker-inner span { padding: 0 28px; }
+  .ticker-inner .up { color: var(--accent3); }
+  .ticker-inner .dn { color: var(--red); }
+  .ticker-inner .divider { color: var(--border); }
+
+  @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+  /* ── MAIN LAYOUT ── */
+  main { padding: 20px 24px 40px; max-width: 1400px; margin: 0 auto; }
+
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .brief-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 4px;
+    color: var(--text-bright);
+  }
+
+  .brief-title span { color: var(--accent); }
+
+  .territory-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--accent2);
+    border: 1px solid var(--accent2);
+    padding: 4px 10px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    opacity: 0.8;
+  }
+
+  /* ── STATUS BAR ── */
+  #status-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 16px;
+    margin-bottom: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    flex-shrink: 0;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .status-dot.active { background: var(--accent3); }
+  .status-dot.loading { background: var(--accent2); }
+  .status-dot.error { background: var(--red); }
+
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+  /* ── GRID ── */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .card.full-width { grid-column: 1 / -1; }
+
+  .card-header {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px;
+    letter-spacing: 2px;
+    color: var(--text-bright);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title .icon {
+    width: 20px; height: 20px;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+  }
+
+  .icon-blue { background: rgba(0,180,216,0.15); color: var(--accent); }
+  .icon-orange { background: rgba(244,162,97,0.15); color: var(--accent2); }
+  .icon-green { background: rgba(46,194,126,0.15); color: var(--accent3); }
+  .icon-red { background: rgba(230,57,70,0.15); color: var(--red); }
+
+  .card-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .card-body { padding: 14px 16px; }
+
+  /* ── NEWS ITEMS ── */
+  .news-item {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: default;
+  }
+  .news-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .news-item:first-child { padding-top: 0; }
+
+  .news-item:hover { background: rgba(0,180,216,0.03); margin: 0 -16px; padding-left: 16px; padding-right: 16px; border-radius: 4px; }
+
+  .news-headline {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-bright);
+    line-height: 1.5;
+    margin-bottom: 4px;
+  }
+
+  .news-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .news-source {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
+
+  .news-relevance {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 2px;
+    letter-spacing: 0.5px;
+  }
+
+  .rel-high { background: rgba(46,194,126,0.15); color: var(--accent3); }
+  .rel-medium { background: rgba(244,162,97,0.15); color: var(--accent2); }
+  .rel-macro { background: rgba(0,180,216,0.12); color: var(--accent); }
+  .rel-watch { background: rgba(230,57,70,0.1); color: var(--red); }
+
+  .news-detail {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 5px;
+    line-height: 1.6;
+  }
+
+  /* ── LOADING ── */
+  .skeleton-line {
+    height: 12px;
+    background: linear-gradient(90deg, var(--border) 25%, var(--surface2) 50%, var(--border) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 3px;
+    margin-bottom: 8px;
+  }
+
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  .skeleton-line.w-full { width: 100%; }
+  .skeleton-line.w-3q { width: 75%; }
+  .skeleton-line.w-half { width: 50%; }
+
+  .loading-block { padding: 4px 0; }
+
+  /* ── MACRO PILLS ── */
+  .macro-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .macro-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+
+  .macro-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+
+  .macro-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-bright);
+  }
+
+  .macro-change {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    margin-top: 2px;
+  }
+
+  .macro-change.up { color: var(--accent3); }
+  .macro-change.dn { color: var(--red); }
+  .macro-change.flat { color: var(--text-dim); }
+
+  /* ── INTEL SECTION ── */
+  .intel-category {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--accent2);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 14px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(244,162,97,0.15);
+  }
+  .intel-category:first-child { margin-top: 0; }
+
+  /* ── TALKING POINT ── */
+  .talking-point {
+    background: var(--surface2);
+    border-left: 3px solid var(--accent);
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .talking-point:last-child { margin-bottom: 0; }
+
+  .tp-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+  }
+
+  .tp-body {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* ── ERROR STATE ── */
+  .error-state {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-dim);
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .error-state .err-icon { font-size: 24px; margin-bottom: 8px; }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+    letter-spacing: 1px;
+  }
+
+  footer span { color: var(--accent2); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-left">
+    <div class="logo-badge">HOLMAN</div>
+    <div class="header-title">FLEET INTEL · MORNING BRIEF</div>
+  </div>
+  <div class="header-right">
+    <div>
+      <div id="clock">--:-- --</div>
+      <div id="date-display">LOADING...</div>
+    </div>
+    <button class="refresh-btn" id="refresh-btn" onclick="runBriefing()">⟳ REFRESH</button>
+  </div>
+</header>
+
+<!-- TICKER -->
+<div class="ticker-bar">
+  <div class="ticker-label">MARKET PULSE</div>
+  <div class="ticker-wrap">
+    <div class="ticker-inner" id="ticker-inner">
+      <span>WTI CRUDE <span class="up" id="wti">LOADING</span></span>
+      <span class="divider">|</span>
+      <span>BRENT <span class="up" id="brent">LOADING</span></span>
+      <span class="divider">|</span>
+      <span>US10Y <span id="t10y">LOADING</span></span>
+      <span class="divider">|</span>
+      <span>USD/EUR <span id="usdeur">LOADING</span></span>
+      <span class="divider">|</span>
+      <span>AUTO TARIFF <span class="dn">25% ON IMPORTS</span></span>
+      <span class="divider">|</span>
+      <span>HOUSTON METRO EMPLOYMENT <span class="up">+2.3% YOY</span></span>
+      <span class="divider">|</span>
+      <span>TX DIESEL AVG <span id="diesel">LOADING</span></span>
+      <span class="divider">|</span>
+      <span>WTI CRUDE <span class="up" id="wti2">LOADING</span></span>
+      <span class="divider">|</span>
+      <span>BRENT <span class="up" id="brent2">LOADING</span></span>
+      <span class="divider">|</span>
+      <span>US10Y <span id="t10y2">LOADING</span></span>
+      <span class="divider">|</span>
+      <span>AUTO TARIFF <span class="dn">25% ON IMPORTS</span></span>
+      <span class="divider">|</span>
+      <span>HOUSTON METRO EMPLOYMENT <span class="up">+2.3% YOY</span></span>
+      <span class="divider">|</span>
+      <span>TX DIESEL AVG <span id="diesel2">LOADING</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+  <div class="top-bar">
+    <div class="brief-title">GOOD MORNING. <span>LET'S SELL.</span></div>
+    <div class="territory-badge">⚑ GREATER HOUSTON · BEAUMONT · LOUISIANA</div>
+  </div>
+
+  <!-- STATUS -->
+  <div id="status-bar">
+    <div class="status-dot" id="status-dot"></div>
+    <span id="status-text">Initializing briefing...</span>
+  </div>
+
+  <!-- GRID -->
+  <div class="grid">
+
+    <!-- MACRO INDICATORS -->
+    <div class="card full-width">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="icon icon-blue">📊</div>
+          MACRO INDICATORS
+        </div>
+        <div class="card-tag">KEY NUMBERS FOR TODAY</div>
+      </div>
+      <div class="card-body" id="macro-body">
+        <div class="loading-block">
+          <div class="skeleton-line w-full"></div>
+          <div class="skeleton-line w-3q"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGIONAL BUSINESS NEWS -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="icon icon-green">🏢</div>
+          REGIONAL BUSINESS
+        </div>
+        <div class="card-tag">HOU · BEAUMONT · LA</div>
+      </div>
+      <div class="card-body" id="regional-body">
+        <div class="loading-block">
+          <div class="skeleton-line w-full"></div>
+          <div class="skeleton-line w-3q"></div>
+          <div class="skeleton-line w-half"></div>
+          <div class="skeleton-line w-full"></div>
+          <div class="skeleton-line w-3q"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TARIFF & TRADE WATCH -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="icon icon-red">⚡</div>
+          TARIFF & TRADE WATCH
+        </div>
+        <div class="card-tag">FLEET IMPACT MONITOR</div>
+      </div>
+      <div class="card-body" id="tariff-body">
+        <div class="loading-block">
+          <div class="skeleton-line w-full"></div>
+          <div class="skeleton-line w-3q"></div>
+          <div class="skeleton-line w-half"></div>
+          <div class="skeleton-line w-full"></div>
+          <div class="skeleton-line w-3q"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENERGY & OIL SECTOR -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="icon icon-orange">⛽</div>
+          ENERGY SECTOR
+        </div>
+        <div class="card-tag">OIL · GAS · DOWNSTREAM</div>
+      </div>
+      <div class="card-body" id="energy-body">
+        <div class="loading-block">
+          <div class="skeleton-line w-full"></div>
+          <div class="skeleton-line w-3q"></div>
+          <div class="skeleton-line w-half"></div>
+          <div class="skeleton-line w-full"></div>
+          <div class="skeleton-line w-3q"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GEOPOLITICAL / RISK WATCH -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="icon icon-red">🌐</div>
+          GEOPOLITICAL WATCH
+        </div>
+        <div class="card-tag">OIL SUPPLY · CONFLICT RISK</div>
+      </div>
+      <div class="card-body" id="geo-body">
+        <div class="loading-block">
+          <div class="skeleton-line w-full"></div>
+          <div class="skeleton-line w-3q"></div>
+          <div class="skeleton-line w-half"></div>
+          <div class="skeleton-line w-full"></div>
+          <div class="skeleton-line w-3q"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLEET & AUTO INDUSTRY -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="icon icon-blue">🚛</div>
+          FLEET & AUTO INDUSTRY
+        </div>
+        <div class="card-tag">EV · LEASING · OEM NEWS</div>
+      </div>
+      <div class="card-body" id="fleet-body">
+        <div class="loading-block">
+          <div class="skeleton-line w-full"></div>
+          <div class="skeleton-line w-3q"></div>
+          <div class="skeleton-line w-half"></div>
+          <div class="skeleton-line w-full"></div>
+          <div class="skeleton-line w-3q"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TODAY'S TALKING POINTS -->
+    <div class="card full-width">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="icon icon-green">💬</div>
+          TODAY'S TALKING POINTS
+        </div>
+        <div class="card-tag">USE THESE IN PROSPECT CALLS</div>
+      </div>
+      <div class="card-body" id="talking-body">
+        <div class="loading-block">
+          <div class="skeleton-line w-full"></div>
+          <div class="skeleton-line w-3q"></div>
+          <div class="skeleton-line w-half"></div>
+          <div class="skeleton-line w-full"></div>
+          <div class="skeleton-line w-3q"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  HOLMAN FLEET INTEL · GREATER HOUSTON / BEAUMONT / LOUISIANA TERRITORY · <span>AI-POWERED BRIEFING</span> · REFRESH EACH MORNING
+</footer>
+
+<script>
+// ─── CLOCK ───
+function updateClock() {
+  const now = new Date();
+  const h = now.getHours();
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  document.getElementById('clock').textContent = `${h12}:${m} ${ampm}`;
+  const days = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  document.getElementById('date-display').textContent = `${days[now.getDay()]} ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ─── STATUS ───
+function setStatus(text, state) {
+  document.getElementById('status-text').textContent = text;
+  const dot = document.getElementById('status-dot');
+  dot.className = 'status-dot ' + (state || '');
+}
+
+// ─── RENDER NEWS ITEMS ───
+function renderNewsItems(items) {
+  if (!items || items.length === 0) return '<div class="error-state"><div class="err-icon">—</div>No items found</div>';
+  return items.map(item => `
+    <div class="news-item">
+      <div class="news-headline">${item.headline}</div>
+      <div class="news-meta">
+        <span class="news-source">${item.source || ''}</span>
+        ${item.tag ? `<span class="news-relevance ${item.tagClass || 'rel-medium'}">${item.tag}</span>` : ''}
+        ${item.tag2 ? `<span class="news-relevance ${item.tag2Class || 'rel-macro'}">${item.tag2}</span>` : ''}
+      </div>
+      ${item.detail ? `<div class="news-detail">${item.detail}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+// ─── RENDER TALKING POINTS ───
+function renderTalkingPoints(points) {
+  if (!points || points.length === 0) return '<div class="error-state">No talking points available</div>';
+  return points.map(p => `
+    <div class="talking-point">
+      <div class="tp-title">💡 ${p.title}</div>
+      <div class="tp-body">${p.body}</div>
+    </div>
+  `).join('');
+}
+
+// ─── RENDER MACRO ───
+function renderMacro(data) {
+  const items = data.indicators || [];
+  const pills = items.map(i => `
+    <div class="macro-pill">
+      <div class="macro-label">${i.label}</div>
+      <div class="macro-value">${i.value}</div>
+      <div class="macro-change ${i.dir || 'flat'}">${i.change || ''}</div>
+    </div>
+  `).join('');
+  return `<div class="macro-grid">${pills}</div>${data.note ? `<div class="news-detail" style="margin-top:8px;">${data.note}</div>` : ''}`;
+}
+
+// ─── MAIN API CALL ───
+async function runBriefing() {
+  const btn = document.getElementById('refresh-btn');
+  btn.disabled = true;
+  btn.textContent = '⟳ LOADING...';
+
+  // Reset skeletons
+  const sections = ['macro-body','regional-body','tariff-body','energy-body','geo-body','fleet-body','talking-body'];
+  sections.forEach(id => {
+    document.getElementById(id).innerHTML = `
+      <div class="loading-block">
+        <div class="skeleton-line w-full"></div>
+        <div class="skeleton-line w-3q"></div>
+        <div class="skeleton-line w-half"></div>
+        <div class="skeleton-line w-full"></div>
+        <div class="skeleton-line w-3q"></div>
+      </div>`;
+  });
+
+  setStatus('Searching for latest news and market data...', 'loading');
+
+  const today = new Date().toLocaleDateString('en-US', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  const systemPrompt = `You are a sharp, elite sales intelligence analyst for a Holman Fleet Management sales rep.
+Territory: Greater Houston TX, Beaumont TX, and all of Louisiana.
+Role: B2B fleet sales — selling fleet leasing, vehicle acquisition, fleet management services, EV fleet consulting, telematics, maintenance programs, and remarketing services to mid-to-large companies with commercial vehicle fleets.
+
+Key prospect/client industries in this territory:
+- Oil & Gas (upstream, midstream, downstream): ExxonMobil, Chevron, Shell, Halliburton, Baker Hughes, Schlumberger/SLB, Enbridge, Enterprise Products, Plains All American, LyondellBasell, Valero, Marathon, Motiva
+- Petrochemical & Refining: Port Arthur, Baton Rouge, Lake Charles refinery complex companies
+- Utilities: Entergy, CenterPoint Energy, Cleco
+- Industrial / Chemical: Dow Chemical, BASF, Air Products, Eastman
+- Construction & Engineering: Turner, Fluor, KBR, Jacobs
+- Healthcare: HCA Houston, Ochsner Health (LA), Tenet Health
+- Logistics & Distribution: companies operating out of Port of Houston, Port of Beaumont
+- State & Local Government fleets in TX and LA
+- Telecom: AT&T, Lumen Technologies
+- Specialty / Field Services: any company with field service technicians driving vans/trucks
+
+You have access to the web_search tool. Search for REAL, TODAY'S news. Today is ${today}.
+
+Return ONLY a valid JSON object with this exact structure:
+{
+  "macro": {
+    "indicators": [
+      {"label": "WTI CRUDE", "value": "$XX.XX", "change": "▲/▼ $X.XX", "dir": "up/dn/flat"},
+      {"label": "BRENT", "value": "$XX.XX", "change": "▲/▼ $X.XX", "dir": "up/dn/flat"},
+      {"label": "US 10Y YIELD", "value": "X.XX%", "change": "▲/▼ Xbps", "dir": "up/dn/flat"},
+      {"label": "TX DIESEL / GAL", "value": "$X.XXX", "change": "vs last wk", "dir": "up/dn/flat"},
+      {"label": "US CPI YOY", "value": "X.X%", "change": "latest reading", "dir": "flat"},
+      {"label": "AUTO TARIFF", "value": "25%", "change": "on imports", "dir": "dn"}
+    ],
+    "note": "One sentence on what macro means for fleet buying decisions today."
+  },
+  "regional": [
+    {
+      "headline": "Real news headline about a company or economic development in Houston/Beaumont/Louisiana relevant to fleet sales",
+      "source": "SOURCE · DATE",
+      "tag": "PROSPECT",
+      "tagClass": "rel-high",
+      "detail": "One sentence on why this matters for your fleet sales conversation."
+    }
+  ],
+  "tariff": [
+    {
+      "headline": "Real tariff, trade policy, or supply chain news headline",
+      "source": "SOURCE · DATE",
+      "tag": "FLEET IMPACT",
+      "tagClass": "rel-watch",
+      "detail": "How this affects vehicle pricing, availability, or client fleet costs."
+    }
+  ],
+  "energy": [
+    {
+      "headline": "Real energy sector news — oil price, refinery, LNG, pipeline news in Gulf Coast region",
+      "source": "SOURCE · DATE",
+      "tag": "OIL & GAS",
+      "tagClass": "rel-medium",
+      "detail": "Why this matters: capex cycles, headcount, fleet expansion signals."
+    }
+  ],
+  "geo": [
+    {
+      "headline": "Real geopolitical news affecting oil supply, trade routes, or US energy markets",
+      "source": "SOURCE · DATE",
+      "tag": "OIL RISK",
+      "tagClass": "rel-watch",
+      "detail": "Impact on crude prices and fleet operating costs."
+    }
+  ],
+  "fleet": [
+    {
+      "headline": "Real fleet industry, auto OEM, or EV commercial vehicle news",
+      "source": "SOURCE · DATE",
+      "tag": "FLEET",
+      "tagClass": "rel-macro",
+      "detail": "What this means for Holman's value proposition or vehicle availability."
+    }
+  ],
+  "talking": [
+    {
+      "title": "Punchy title for the talking point",
+      "body": "2-3 sentence actionable talking point you can use with a prospect or client TODAY based on actual news. Be specific. Include a tie-in to Holman fleet services."
+    }
+  ]
+}
+
+Rules:
+- Use web_search to find REAL news from today or the last 48 hours
+- Search for: Houston business news today, Louisiana energy news today, auto tariffs fleet 2025, oil price today, Iran oil sanctions today, Gulf Coast industrial news
+- Give 4-5 items per section (regional, tariff, energy, geo, fleet)
+- Give 3-4 talking points
+- All news must be REAL and sourced
+- Return ONLY the JSON object, no markdown fences, no preamble`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        system: systemPrompt,
+        messages: [{ role: 'user', content: `Generate my complete morning fleet sales briefing for ${today}. Search the web for real, current news. Return only the JSON object.` }]
+      })
+    });
+
+    const data = await response.json();
+    if (data.error) throw new Error(data.error.message);
+
+    // Extract text from response
+    const fullText = (data.content || [])
+      .map(block => block.type === 'text' ? block.text : '')
+      .filter(Boolean)
+      .join('\n');
+
+    // Parse JSON
+    let clean = fullText.replace(/```json|```/g, '').trim();
+    // Find first { to last }
+    const start = clean.indexOf('{');
+    const end = clean.lastIndexOf('}');
+    if (start === -1 || end === -1) throw new Error('No JSON found in response');
+    clean = clean.slice(start, end + 1);
+
+    const brief = JSON.parse(clean);
+
+    // Render all sections
+    document.getElementById('macro-body').innerHTML = renderMacro(brief.macro || {indicators:[]});
+    document.getElementById('regional-body').innerHTML = renderNewsItems(brief.regional);
+    document.getElementById('tariff-body').innerHTML = renderNewsItems(brief.tariff);
+    document.getElementById('energy-body').innerHTML = renderNewsItems(brief.energy);
+    document.getElementById('geo-body').innerHTML = renderNewsItems(brief.geo);
+    document.getElementById('fleet-body').innerHTML = renderNewsItems(brief.fleet);
+    document.getElementById('talking-body').innerHTML = renderTalkingPoints(brief.talking);
+
+    // Update ticker with real values
+    const ind = brief.macro?.indicators || [];
+    const wtiItem = ind.find(i => i.label === 'WTI CRUDE');
+    const brentItem = ind.find(i => i.label === 'BRENT');
+    const t10yItem = ind.find(i => i.label === 'US 10Y YIELD');
+    const dieselItem = ind.find(i => i.label === 'TX DIESEL / GAL');
+
+    if (wtiItem) { document.getElementById('wti').textContent = wtiItem.value; document.getElementById('wti2').textContent = wtiItem.value; }
+    if (brentItem) { document.getElementById('brent').textContent = brentItem.value; document.getElementById('brent2').textContent = brentItem.value; }
+    if (t10yItem) { document.getElementById('t10y').textContent = t10yItem.value; document.getElementById('t10y2').textContent = t10yItem.value; }
+    if (dieselItem) { document.getElementById('diesel').textContent = dieselItem.value; document.getElementById('diesel2').textContent = dieselItem.value; }
+
+    setStatus(`Briefing complete · ${new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'})} · ${(data.content||[]).filter(b=>b.type==='tool_use').length} searches conducted`, 'active');
+
+  } catch (err) {
+    console.error(err);
+    const errHtml = `<div class="error-state"><div class="err-icon">⚠</div>${err.message || 'Load failed. Check console.'}</div>`;
+    sections.forEach(id => document.getElementById(id).innerHTML = errHtml);
+    setStatus('Error loading briefing: ' + err.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '⟳ REFRESH';
+}
+
+// Auto-run on load
+runBriefing();
+</script>
+</body>
+</html>
